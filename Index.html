@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ryuji Sync Log 🍼</title>
+    <title>Kenji Sync Log 🍼</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 20px; background-color: #f0f4f8; color: #333; margin: 0; }
         .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 92vh; }
@@ -45,11 +45,11 @@
         <input type="number" id="milkAmount" placeholder="ระบุ ml" inputmode="decimal">
         
         <div class="quick-amounts">
-    <div class="amt-btn" onclick="document.getElementById('milkAmount').value=30">1 oz<br>30ml</div>
-    <div class="amt-btn" onclick="document.getElementById('milkAmount').value=60">2 oz<br>60ml</div>
-    <div class="amt-btn" onclick="document.getElementById('milkAmount').value=90">3 oz<br>90ml</div>
-    <div class="amt-btn" onclick="document.getElementById('milkAmount').value=120">4 oz<br>120ml</div>
-</div>
+            <div class="amt-btn" onclick="document.getElementById('milkAmount').value=30">1 oz<br>30ml</div>
+            <div class="amt-btn" onclick="document.getElementById('milkAmount').value=60">2 oz<br>60ml</div>
+            <div class="amt-btn" onclick="document.getElementById('milkAmount').value=90">3 oz<br>90ml</div>
+            <div class="amt-btn" onclick="document.getElementById('milkAmount').value=120">4 oz<br>120ml</div>
+        </div>
         
         <button class="save-btn" id="btnSave" onclick="saveToCloud()">💾 บันทึกขึ้น Cloud</button>
     </div>
@@ -64,14 +64,43 @@
     // *** สำคัญ: นำ URL ที่ได้จาก Google Apps Script มาวางตรงนี้ ***
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyV5HDWdJrc1shLZzoaiJ_zEcbMoNcEa0qE3PBBIAwUGWi_rYIYN1gwJUkHTxziVa8P/exec"; 
 
-    // ฟังก์ชันตั้งค่าปริมาณด่วน
-    function setAmount(val) {
-        document.getElementById('milkAmount').value = val;
-    }
-
     // ตั้งค่าเวลาปัจจุบัน
     function setCurrentTime() {
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
-        document.getElementById('feeding
+        document.getElementById('feedingTime').value = localISOTime;
+    }
+
+    // บันทึกข้อมูลลง Google Sheets
+    async function saveToCloud() {
+        const time = document.getElementById('feedingTime').value;
+        const amount = document.getElementById('milkAmount').value;
+
+        if(!time || !amount) {
+            alert("กรุณาใส่เวลาและปริมาณด้วยครับ");
+            return;
+        }
+
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true;
+        btn.innerText = "⏳ กำลังส่งข้อมูล...";
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // จำเป็นสำหรับ Google Script
+                body: JSON.stringify({
+                    id: Date.now().toString(),
+                    time: time,
+                    amount: amount
+                })
+            });
+            
+            // รอสักครู่แล้วโหลดข้อมูลใหม่
+            setTimeout(() => {
+                alert("บันทึกสำเร็จ!");
+                document.getElementById('milkAmount').value = "";
+                setCurrentTime();
+                loadData();
+                btn.disabled = false;
