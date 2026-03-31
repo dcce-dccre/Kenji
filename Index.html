@@ -5,58 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kenji Sync Log 🍼</title>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; text-align: center; padding: 20px; background-color: #f0f4f8; color: #333; margin: 0; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 92vh; }
-        h2 { margin-top: 0; color: #2c3e50; font-size: 22px; margin-bottom: 20px; }
+        body { font-family: -apple-system, sans-serif; text-align: center; padding: 20px; background-color: #f0f4f8; margin: 0; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 95vh; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
         .input-group { background: #fffdf2; padding: 20px; border-radius: 20px; border: 1px solid #ffeeba; margin-bottom: 25px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #718096; }
-        input { padding: 14px; font-size: 18px; width: 92%; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; outline: none; background: white; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #718096; }
+        input { padding: 14px; font-size: 18px; width: 92%; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
         .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-        .amt-btn { background: white; border: 2px solid #e2e8f0; padding: 12px 5px; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: bold; color: #4a5568; transition: 0.2s; }
-        .amt-btn:active { background: #ebf4ff; border-color: #4a90e2; transform: translateY(2px); }
-        .save-btn { background-color: #4a90e2; color: white; border: none; padding: 20px; font-size: 20px; border-radius: 18px; cursor: pointer; width: 100%; font-weight: bold; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); }
-        .save-btn:disabled { background-color: #cbd5e0; box-shadow: none; }
-        #history { margin-top: 30px; text-align: left; }
-        .day-container { margin-bottom: 25px; border-radius: 18px; overflow: hidden; border: 1px solid #edf2f7; background: white; }
-        .date-header { background: #4a5568; color: white; padding: 12px 18px; font-weight: bold; display: flex; justify-content: space-between; font-size: 15px; }
-        .total-badge { background: #ffdada; color: #9b2c2c; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 800; }
-        .log-item { border-bottom: 1px solid #f7fafc; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; }
-        .time-text { font-size: 16px; font-weight: 600; color: #4a5568; }
-        .amount-text { font-size: 20px; font-weight: 800; color: #2b6cb0; }
-        .loading-text { color: #a0aec0; text-align: center; padding: 20px; font-style: italic; }
+        .amt-btn { background: white; border: 2px solid #e2e8f0; padding: 12px 5px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .save-btn { background-color: #4a90e2; color: white; border: none; padding: 20px; font-size: 20px; border-radius: 18px; width: 100%; font-weight: bold; cursor: pointer; }
+        .save-btn:disabled { background-color: #cbd5e0; }
+        #logList { margin-top: 20px; text-align: left; }
+        .day-container { margin-bottom: 20px; border-radius: 15px; border: 1px solid #edf2f7; overflow: hidden; }
+        .date-header { background: #4a5568; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; }
+        .log-item { background: white; padding: 12px 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #f7fafc; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🍼 Kenji's Cloud Log</h2>
-    
     <div class="input-group">
         <label>⏰ เวลาให้นม</label>
         <input type="datetime-local" id="feedingTime">
-        
         <label>🥛 ปริมาณ (ml)</label>
-        <input type="number" id="milkAmount" placeholder="ระบุ ml" inputmode="decimal">
-        
+        <input type="number" id="milkAmount" placeholder="ระบุ ml">
         <div class="quick-amounts">
             <div class="amt-btn" onclick="document.getElementById('milkAmount').value=30">1 oz<br>30ml</div>
             <div class="amt-btn" onclick="document.getElementById('milkAmount').value=60">2 oz<br>60ml</div>
             <div class="amt-btn" onclick="document.getElementById('milkAmount').value=90">3 oz<br>90ml</div>
             <div class="amt-btn" onclick="document.getElementById('milkAmount').value=120">4 oz<br>120ml</div>
         </div>
-        
         <button class="save-btn" id="btnSave" onclick="saveToCloud()">💾 บันทึกขึ้น Cloud</button>
     </div>
-
-    <div id="history">
-        <h3>ประวัติล่าสุด (Sync)</h3>
-        <div id="logList" class="loading-text">กำลังโหลดข้อมูล...</div>
-    </div>
+    <div id="logList">กำลังโหลดประวัติ...</div>
 </div>
 
 <script>
-    // *** สำคัญ: นำ URL ที่ได้จาก Google Apps Script มาวางในเครื่องหมายคำพูดด้านล่างนี้ ***
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyV5HDWdJrc1shLZzoaiJ_zEcbMoNcEa0qE3PBBIAwUGWi_rYIYN1gwJUkHTxziVa8P/exec"; 
+    // *** วาง URL ของคุณพ่อในเครื่องหมายคำพูดด้านล่าง ***
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlltUNfd-acgEVSve-6tDM2NJN2IRqQ-SyxRTGOF1bDLNSlAQGhuGMw6ezapMZi9mA/exec"; 
 
     function setCurrentTime() {
         const now = new Date();
@@ -67,27 +54,66 @@
     async function saveToCloud() {
         const time = document.getElementById('feedingTime').value;
         const amount = document.getElementById('milkAmount').value;
-
-        if(!time || !amount) {
-            alert("กรุณาใส่เวลาและปริมาณด้วยครับคุณพ่อ");
-            return;
-        }
+        if(!time || !amount) return alert("กรุณาใส่ข้อมูลให้ครบครับ");
 
         const btn = document.getElementById('btnSave');
         btn.disabled = true;
         btn.innerText = "⏳ กำลังส่ง...";
 
         try {
-            // ส่งข้อมูลแบบ POST (no-cors สำหรับ Google Apps Script)
             await fetch(SCRIPT_URL, {
                 method: "POST",
                 mode: "no-cors",
-                body: JSON.stringify({ id: Date.now().toString(), time, amount })
+                body: JSON.stringify({ id: Date.now().toString(), time: time, amount: amount })
             });
-            
-            // เนื่องจาก no-cors เราจะไม่เห็น response แต่ถ้าไม่มี Error ใน catch ก็คือผ่าน
             alert("บันทึกสำเร็จลง Sheets!");
             document.getElementById('milkAmount').value = "";
             setCurrentTime();
-            loadData(); // รีเฟรชรายการ
-        } catch (e
+            loadData();
+        } catch (e) {
+            alert("Error: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 บันทึกขึ้น Cloud";
+        }
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            renderLogs(data);
+        } catch (e) { document.getElementById('logList').innerHTML = "ยังไม่มีข้อมูลหรือโหลดไม่สำเร็จ"; }
+    }
+
+    function renderLogs(rows) {
+        const list = document.getElementById('logList');
+        list.innerHTML = "";
+        if(!rows || rows.length <= 1) return list.innerHTML = "ไม่มีประวัติ";
+        
+        const logs = rows.slice(1).sort((a,b) => new Date(b[0]) - new Date(a[0]));
+        const groups = logs.reduce((acc, row) => {
+            const d = new Date(row[0]).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+            if(!acc[d]) acc[d] = { items: [], total: 0 };
+            acc[d].items.push(row);
+            acc[d].total += parseFloat(row[1] || 0);
+            return acc;
+        }, {});
+
+        for (const date in groups) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-container';
+            dayDiv.innerHTML = `<div class="date-header"><span>📅 ${date}</span><span>รวม ${groups[date].total} ml</span></div>`;
+            groups[date].items.forEach(row => {
+                const t = new Date(row[0]).toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' });
+                dayDiv.innerHTML += `<div class="log-item"><span>🕒 ${t}</span><b>${row[1]} ml</b></div>`;
+            });
+            list.appendChild(dayDiv);
+        }
+    }
+
+    setCurrentTime();
+    loadData();
+</script>
+</body>
+</html>
